@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', 'STOCK')
-@section('stock')
+@section('content')
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-12">
@@ -57,6 +57,15 @@
                                 @endif
                             ">
                             <td>{{ $dados->produto->nome." / ".$dados->produto->descricao." / ".$dados->produto->categoria }}</td>
+                            <td>
+                                <span class="badge 
+                                    {{ $dados->status_validade == 'expirado' ? 'bg-danger' : '' }}
+                                    {{ $dados->status_validade == 'critico' ? 'bg-warning' : '' }}
+                                    {{ $dados->status_validade == 'atencao' ? 'bg-info' : '' }}
+                                ">
+                                    {{ strtoupper($dados->status_validade) }}
+                                </span>
+                            </td>
                             <td>{{ $dados->preco." KZ" }}</td>
                             <td>{{ $dados->qtd_stock }}</td>
                             <td>{{ $dados->data_entrada }}</td>

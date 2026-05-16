@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Produto')
+@section('title', 'Categoria')
 @section('content')
 <div class="container-fluid">
     <div class="row">
@@ -7,7 +7,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between">
                 <div class="header-title" style="display: flex; justify-content: space-between; width: 100%">
-                    <h4 class="card-title">Cadastrar Produtos</h4>
+                    <h4 class="card-title">Cadastrar Categorias</h4>
                     <a href="#Cadastrar" data-toggle="modal" style="font-size: 20pt"><i class="fa fa-plus-circle"></i></a>
                 </div>
             </div>
@@ -42,8 +42,6 @@
                     <thead>
                         <tr class="ligth">
                             <th>NOME</th>
-                            <th>DESCRIÇÃO</th>
-                            <th>CATEGÓRIA</th>
                             <th>FUNCIONÁRIO</th>
                             <th>OPÇÕES</th>
                         </tr>
@@ -52,29 +50,10 @@
                         @foreach ($valor as $dados)
                             <tr>
                                 <td>{{$dados->nome}}</td>
-                                <td>{{$dados->descricao}}</td>
-                                <td>{{$dados->categoria->nome}}</td>
                                 <td>{{$dados->funcionario->nome}}</td>
                                 <td>
-                                    <a href="#" 
-                                        class="text-primary btn-editar"
-                                        data-id="{{ $dados->id }}"
-                                        data-nome="{{ $dados->nome }}"
-                                        data-descricao="{{ $dados->descricao }}"
-                                        data-categoria="{{ $dados->categoria_id }}">
-                                        <i class="fa fa-edit"></i>
-                                    </a>
-                                    <a href="#" 
-                                        class="text-success btn-entrada"
-                                        data-id="{{ $dados->id }}"
-                                        data-nome="{{ $dados->nome }}">
-                                        DAR ENTRADA
-                                    </a>
                                     <a href="#Cadastrar" data-toggle="modal" class="text-primary" onclick="editar({{$dados}})" ><i class="fa fa-edit"></i></a>
-                                    <a href="{{route('produto.destroy',$dados->id)}}" class="text-danger"><i class="fa fa-trash"></i></a>
-                                </td>
-                                <td>
-                                    <a href="{{route('stock.index',$dados->id)}}" class="text-danger">DAR ENTRADA</a>
+                                    <a href="{{route('categoria.destroy',$dados->id)}}" class="text-danger"><i class="fa fa-trash"></i></a>
                                 </td>
                             </tr>
                         @endforeach
@@ -92,31 +71,18 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
                 <div class="modal-header">
-                        <h5 class="modal-title">Cadastrar Produto</h5>
+                        <h5 class="modal-title">Cadastrar Categoria</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                     </div>
             <div class="modal-body">
                 <div class="container-fluid">
-                  <form action="{{ route('produto.store') }}" method="post">
+                  <form action="{{ route('categoria.store') }}" method="post">
                         @csrf
                         <input type="hidden" name="id" id="id">
                         <div class="row">
-                            <x-input-normal id="nome" name="nome" type="text" titulo="NOME DO PRODUTO" alert="" />
-                            <x-input-normal id="descricao" name="descricao" type="text" titulo="DESCRIÇÃO" alert="" />
-                            <div class="mb-3">
-                                <label for="" class="form-label">SELECIONAR A CATEGORIA</label>
-                                <select name="categoria_id" id="categoria" class="form-control" >
-                                    <option value="">SELECIONAR A CATEGORIA</option>
-                                    @foreach($categorias as $categoria)
-                                        <option value="{{ $categoria->id }}">
-                                            {{ $categoria->nome }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
+                            <x-input-normal id="nome" name="nome" type="text" titulo="NOME DA CATEGORIA" alert="" />
                         </div>
                         <div class="modal-footer">
                             <x-botao-form />
@@ -132,16 +98,10 @@
     function editar(valor) {
         document.getElementById('id').value = valor.id;
         document.getElementById('nome').value = valor.nome;
-        document.getElementById('descricao').value = valor.descricao;
-        document.getElementById('categoria').value = valor.categoria_id;
     }
-
-    
     function limpar() {
         document.getElementById('id').value = "";
         document.getElementById('nome').value = "";
-        document.getElementById('descricao').value = "";
-        document.getElementById('categoria').value = "";
     }
 </script>
 @endsection

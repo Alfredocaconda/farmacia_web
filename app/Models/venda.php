@@ -14,4 +14,8 @@ class venda extends Model
     {
         return $this->belongsTo(Funcionario::class);
     }
+    public function stock()
+    {
+        return $this->belongsTo(Stock::class, 'stock_id');
+    }
 }

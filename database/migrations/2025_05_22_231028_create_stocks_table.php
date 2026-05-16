@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('stocks', function (Blueprint $table) {
             $table->id();
-            $table->double('preco');
+            $table->decimal('preco_unitario', 10, 2);
+            $table->decimal('preco_venda', 10, 2);
             $table->integer('qtd_stock');
             $table->string('codigo_barra');
             $table->string('fornecedor');
-            $table->string('caducidade');
+            $table->date('caducidade');
             $table->date('data_entrada');
             $table->foreignId('id_funcionario')->constrained('funcionarios')->onDelete('cascade');
             $table->foreignId('id_produto')->constrained('produtos')->onDelete('cascade');

@@ -40,7 +40,7 @@
           <div class="iq-sidebar-logo d-flex align-items-center justify-content-between">
               <a href="{{url('/dashboard')}}" class="header-logo">
                   <img src="{{ asset('images/logo.png') }}" class="img-fluid rounded-normal light-logo" alt="logo">
-                  <h5 class="logo-title light-logo ml-3">FARMÁCIA</h5>
+                  <p class="logo-title light-logo ml-3">FARMÁCIA 4 DE SETEMBRO</p>
               </a>
               <div class="iq-menu-bt-sidebar ml-0">
                   <i class="las la-bars wrapper-menu"></i>
@@ -62,6 +62,12 @@
                         <a href="{{route('funcionario.index')}}" class="svg-icon">
                             <i class="fa fa-users"></i>
                               <span class="ml-4">FUNCIONÁRIOS</span>
+                          </a>
+                      </li>
+                      <li class=" ">
+                        <a href="{{route('categoria.index')}}" class="svg-icon">
+                            <i class="fa fa-users"></i>
+                              <span class="ml-4">CATEGORIA</span>
                           </a>
                       </li>
                       <li class=" ">
@@ -111,7 +117,7 @@
                       <i class="ri-menu-line wrapper-menu"></i>
                       <a href="" class="header-logo">
                           <img src="{{ asset('images/logo.png') }}" class="img-fluid rounded-normal" alt="logo">
-                          <h5 class="logo-title ml-3">FARMÁCIA</h5>
+                          <p class="logo-title ml-3">FARMÁCIA 4 DE SETEMBRO</p>
 
                       </a>
                   </div>
@@ -211,12 +217,7 @@
           </div>
       </div>
       <div class="content-page">
-       @yield('principal')
-       @yield('funcionario')
-       @yield('produto')
-       @yield('stock')
-       @yield('perfil')
-       @yield('content')
+             @yield('content')
     </div>
     </div>
     <!-- Wrapper End-->
@@ -232,7 +233,7 @@
                             </ul>
                         </div>
                         <div class="col-lg-6 text-right">
-                            <span class="mr-1"><script>document.write(new Date().getFullYear())</script>©</span> <a href="#" class="">SMILE FARMA & ODONTO-COMERÇIO E SERVIÇOS, LDA</a>.
+                            <span class="mr-1"><script>document.write(new Date().getFullYear())</script>©</span> <a href="#" class="">FARMÁCIA 4 DE SETEMBRO</a>.
                         </div>
                     </div>
                 </div>

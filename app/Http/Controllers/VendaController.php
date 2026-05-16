@@ -143,7 +143,7 @@ class VendaController extends Controller
                 // Registra a venda
                 $venda = new Venda();
                 $venda->codigo_fatura = $codigo_fatura;
-                $venda->produto_id = $item['id']; 
+                $venda->stock_id = $item['id'];
                 $venda->quantidade = $item['quantidade'];
                 $venda->preco_unitario = $item['preco'];
                 $venda->subtotal = $subtotal;

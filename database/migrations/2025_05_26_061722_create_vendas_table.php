@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('vendas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('produto_id')->constrained('produtos'); // produto vendido
             $table->integer('quantidade'); // qtd vendida
             $table->decimal('preco_unitario', 10, 2); // preço por unidade
             $table->decimal('subtotal', 10, 2); // preco_unitario * quantidade
             $table->date('data_venda'); // data da venda
             $table->string('codigo_fatura');
+            $table->foreignId('stock_id')->nullable()->constrained('stocks')->onDelete('cascade');
             $table->string('cliente');
             $table->string('forma_pagamento');
             $table->foreignId('funcionario_id')->constrained('funcionarios');

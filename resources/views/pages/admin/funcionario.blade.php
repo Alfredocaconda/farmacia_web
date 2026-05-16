@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', 'FUNCIONÁRIO')
-@section('funcionario')
+@section('content')
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-12">

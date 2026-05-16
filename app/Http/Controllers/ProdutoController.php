@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\categoria;
 use App\Models\produto;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,10 +15,14 @@ class ProdutoController extends Controller
      */
     public function index()
     {
-        //
-        $valor=produto::orderby('nome','desc','funcionario')->get();
-        return view('pages.admin.produto',compact('valor'));
-    }
+        $valor = Produto::with(['categoria', 'funcionario'])
+            ->orderBy('nome', 'desc')
+            ->get();
+
+        $categorias = Categoria::orderBy('nome', 'asc')->get();
+
+        return view('pages.admin.produto', compact('valor', 'categorias'));
+    }  
     /**
      * Store a newly created resource in storage.
      */
@@ -28,21 +34,18 @@ class ProdutoController extends Controller
                 $rules = [
                 'nome' => ['required', 'string', 'regex:/^[a-zA-ZÀ-ÿ\s]+$/'],
                 'descricao' => ['required'],
-                'categoria' => ['required', 'string', 'regex:/^[a-zA-ZÀ-ÿ\s]+$/'],
             ];
 
             $request->validate($rules, [
                 'nome.required' => 'O NOME É OBRIGATÓRIO!',
                 'nome.regex' => 'O NOME DEVE CONTER APENAS LETRAS!',
                 'descricao.required' => 'A DESCRIÇÃO É OBRIGATÓRIA!',
-                'categoria.required' => 'A CATEGORIA É OBRIGATÓRIA!',
-                'categoria.regex' => 'A CATEGORIA DEVE CONTER APENAS LETRAS!',
             ]);
 
             // Verificar se já existe produto igual
             $produtoDuplicado = produto::where('nome', $request->nome)
                 ->where('descricao', $request->descricao)
-                ->where('categoria', $request->categoria);
+                ->where('categoria_id', $request->categoria_id);
 
             if ($request->filled('id')) {
                 $produtoDuplicado->where('id', '!=', $request->id);
@@ -57,7 +60,7 @@ class ProdutoController extends Controller
             //PREENCHER OS CAMPOS DO FORMULARIO
             $valor->nome=$request->nome;
             $valor->descricao=$request->descricao;
-            $valor->categoria=$request->categoria;
+            $valor->categoria_id=$request->categoria_id;
             $valor->id_funcionario = Auth::guard('funcionario')->user()->id;
             $valor->save();
             return redirect()->back()->with("SUCESSO",$request->filled('id') ? "PRODUTO ACTUALIZADO COM SUCESSO" : "PRODUTO CADASTRADO COM SUCESSO");

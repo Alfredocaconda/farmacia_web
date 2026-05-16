@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('perfil')
+@section('content')
 <div class="media-body">
     <h2 class="mb-2">Meu Perfil</h2>
     <h4 class="mb-2">Nome Completo : {{Auth::guard('funcionario')->user()->nome}}</h4>
