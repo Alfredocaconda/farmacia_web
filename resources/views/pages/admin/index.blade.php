@@ -26,14 +26,18 @@ $dailySales = \App\Models\Venda::select(
 ->get();
 
 // Top produtos
-$topProducts = \App\Models\Venda::with('stock.produto')
-    ->select('id', DB::raw('SUM(quantidade) as subtotal'))
-    ->groupBy('id')
+$topProducts = \App\Models\Venda::select(
+        'stock_id',
+        DB::raw('SUM(quantidade) as total_vendido')
+    )
+    ->with('stock.produto')
+    ->groupBy('stock_id')
+    ->orderByDesc('total_vendido')
     ->get()
     ->map(function ($v) {
         return [
-            'nome' => $v->stock->produto->nome,
-            'subtotal' => $v->subtotal
+            'nome' => optional($v->stock->produto)->nome ?? 'Produto removido',
+            'total' => $v->total_vendido
         ];
     });
     
@@ -112,8 +116,7 @@ $revenue = \App\Models\Venda::select(
                 <div id="chartRevenue"></div>
             </div>
         </div>
-
-    </div>
+           </div>
 <h5>Expirados: {{ $expirados }}</h5>
 <h5>Críticos: {{ $criticos }}</h5>
 <h4>Lucro Total: {{ number_format($lucro, 2) }} Kz</h4>
@@ -128,48 +131,48 @@ $revenue = \App\Models\Venda::select(
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 <script>
-/* ===== VENDAS POR MÊS ===== */
-new ApexCharts(document.querySelector("#chartMonth"), {
-    chart: { type: 'bar', height: 300 },
-    series: [{
-        name: 'Vendas',
-        data: {!! json_encode($monthlySales->pluck('total')) !!}
-    }],
-    xaxis: {
-        categories: {!! json_encode($monthlySales->pluck('mes')) !!}
-    }
-}).render();
+    /* ===== VENDAS POR MÊS ===== */
+    new ApexCharts(document.querySelector("#chartMonth"), {
+        chart: { type: 'bar', height: 300 },
+        series: [{
+            name: 'Vendas',
+            data: {!! json_encode($monthlySales->pluck('total')) !!}
+        }],
+        xaxis: {
+            categories: {!! json_encode($monthlySales->pluck('mes')) !!}
+        }
+    }).render();
 
-/* ===== DIÁRIO ===== */
-new ApexCharts(document.querySelector("#chartDaily"), {
-    chart: { type: 'line', height: 300 },
-    series: [{
-        name: 'Vendas',
-        data: {!! json_encode($dailySales->pluck('total')) !!}
-    }],
-    xaxis: {
-        categories: {!! json_encode($dailySales->pluck('data')) !!}
-    }
-}).render();
+    /* ===== DIÁRIO ===== */
+    new ApexCharts(document.querySelector("#chartDaily"), {
+        chart: { type: 'line', height: 300 },
+        series: [{
+            name: 'Vendas',
+            data: {!! json_encode($dailySales->pluck('total')) !!}
+        }],
+        xaxis: {
+            categories: {!! json_encode($dailySales->pluck('data')) !!}
+        }
+    }).render();
 
-/* ===== TOP PRODUTOS ===== */
-new ApexCharts(document.querySelector("#chartTop"), {
-    chart: { type: 'donut', height: 300 },
-    series: {!! json_encode($topProducts->pluck('total')) !!},
-    labels: {!! json_encode($topProducts->pluck('nome')) !!}
-}).render();
+    /* ===== TOP PRODUTOS ===== */
+    new ApexCharts(document.querySelector("#chartTop"), {
+        chart: { type: 'donut', height: 300 },
+        series: {!! json_encode($topProducts->pluck('total')) !!},
+        labels: {!! json_encode($topProducts->pluck('nome')) !!}
+    }).render();
 
-/* ===== RECEITA ===== */
-new ApexCharts(document.querySelector("#chartRevenue"), {
-    chart: { type: 'area', height: 300 },
-    series: [{
-        name: 'Receita',
-        data: {!! json_encode($revenue->pluck('total')) !!}
-    }],
-    xaxis: {
-        categories: {!! json_encode($revenue->pluck('data')) !!}
-    }
-}).render();
+    /* ===== RECEITA ===== */
+    new ApexCharts(document.querySelector("#chartRevenue"), {
+        chart: { type: 'area', height: 300 },
+        series: [{
+            name: 'Receita',
+            data: {!! json_encode($revenue->pluck('total')) !!}
+        }],
+        xaxis: {
+            categories: {!! json_encode($revenue->pluck('data')) !!}
+        }
+    }).render();
 </script>
 
 @endsection

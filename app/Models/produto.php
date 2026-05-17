@@ -15,8 +15,8 @@ class produto extends Model
         return $this->hasOne(Stock::class, 'id_produto');
     }
     public function categoria()
-    {
-        return $this->hasOne(categoria::class, 'id');
-    }
+{
+    return $this->belongsTo(Categoria::class, 'categoria_id', 'id');
+}
     
 }

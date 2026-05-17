@@ -16,18 +16,32 @@ class stock extends Model
         return $this->belongsTo(Produto::class, 'id_produto');
     }
     
-    // Acessor para status de validade
-    public function getStatusValidadeAttribute()
+    public function getAlertaCompletaAttribute()
     {
-        // Se não houver data de caducidade, consideramos como "sem validade"
-        if (!$this->caducidade) return 'sem_validade';
-        // Calcula a diferença em dias entre a data atual e a data de caducidade
-        $dias = Carbon::now()->diffInDays($this->caducidade, false);
-        // Define o status com base na quantidade de dias restantes
-        if ($dias <= 0) return 'expirado';
-        if ($dias <= 5) return 'critico';
-        if ($dias <= 10) return 'atencao';
-        // Se estiver a mais de 10 dias da caducidade, consideramos como "normal"
+        $validade = $this->status_validade;
+
+        $stockBaixo = $this->qtd_stock <= 10; // regra ERP
+
+        if ($validade == 'expirado' && $stockBaixo) {
+            return 'critico_total';
+        }
+
+        if ($validade == 'expirado') {
+            return 'expirado';
+        }
+
+        if ($stockBaixo) {
+            return 'baixo_stock';
+        }
+
+        if ($validade == 'critico') {
+            return 'critico_validade';
+        }
+
+        if ($validade == 'atencao') {
+            return 'atencao_validade';
+        }
+
         return 'normal';
     }
   

@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('vendas', function (Blueprint $table) {
             $table->id();
             $table->integer('quantidade'); // qtd vendida
-            $table->decimal('preco_unitario', 10, 2); // preço por unidade
-            $table->decimal('subtotal', 10, 2); // preco_unitario * quantidade
+            $table->decimal('preco_venda', 10, 2); // preço por unidade
+            $table->decimal('subtotal', 10, 2); // preco_venda * quantidade
             $table->date('data_venda'); // data da venda
             $table->string('codigo_fatura');
             $table->foreignId('stock_id')->nullable()->constrained('stocks')->onDelete('cascade');

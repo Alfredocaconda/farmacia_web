@@ -21,7 +21,7 @@ class DashboardController extends Controller
 
             $lucro = DB::table('vendas')
                 ->join('stocks', 'vendas.stock_id', '=', 'stocks.id')
-                ->select(DB::raw('SUM((vendas.preco_unitario - stocks.preco) * vendas.quantidade) as total'))
+                ->select(DB::raw('SUM((vendas.preco_venda - stocks.preco_compra) * vendas.quantidade) as total'))
                 ->value('total');
 
                // Stock baixo (<= 5)

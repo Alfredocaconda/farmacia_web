@@ -1,193 +1,252 @@
 @extends('layouts.app')
 @section('title', 'STOCK')
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between">
-                <div class="header-title" style="display: flex; justify-content: space-between; width: 100%">
-                    <h4 class="card-title">Cadastrar STOCK</h4>
-                    <a href="#Cadastrar" data-toggle="modal" style="font-size: 20pt"><i class="fa fa-plus-circle"></i></a>
-                </div>
-            </div>
-            @if(session('ERRO'))
-                    <div class="alert alert-danger">
-                        <p>{{session('ERRO')}}</p>
-                    </div>
-                @endif
-                @if(session('SUCESSO'))
-                    <div class="alert alert-success">
-                        <p>{{session('SUCESSO')}}</p>
-                    </div>
-                @endif
-                @if($totalBaixoStock > 0)
-                <ul class="list-group">
-                    @foreach($baixoStock as $item)
-                        <li class="list-group-item d-flex justify-content-between">
-                            {{ $item->produto->nome }}
-                            <span class="badge bg-danger">{{ $item->quantidade }}</span>
-                        </li>
-                    @endforeach
-                </ul>
-                @endif
 
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table id="datatable" class="table data-tables table-striped">
-                    <thead>
-                        <tr class="ligth">
-                            <th>Produto</th>
-                            <th>Preço </th>
-                            <th>QTD</th>
-                            <th>Data Entrada</th>
-                            <th>Codigo Barra</th>
-                            <th>Fornecedor</th>
-                            <th>Caducidade</th>
-                            <th>Funcionario</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
+<div class="container-fluid">
+
+    {{-- HEADER --}}
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Gestão de Stock</h4>
+        </div>
+    </div>
+
+    {{-- ALERTAS --}}
+    @if(session('ERRO'))
+        <div class="alert alert-danger">{{ session('ERRO') }}</div>
+    @endif
+
+    @if(session('SUCESSO'))
+        <div class="alert alert-success">{{ session('SUCESSO') }}</div>
+    @endif
+
+    {{-- ALERTA STOCK BAIXO --}}
+    @if($totalBaixoStock > 0)
+        <div class="alert alert-warning">
+            <strong>⚠️ Stock Baixo:</strong>
+            <ul class="mb-0">
+                @foreach($baixoStock as $item)
+                    <li>{{ $item->produto->nome }} — <strong>{{ $item->qtd_stock }}</strong></li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- TABELA --}}
+    <div class="card">
+        <div class="card-body table-responsive">
+
+            <table class="table table-striped table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Produto</th>
+                        <th>Compra</th>
+                        <th>Venda</th>
+                        <th>Qtd</th>
+                        <th>Fornecedor</th>
+                        <th>Validade</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
                     @foreach ($stock as $dados)
-                            <tr class="
-                                @if($dados->alerta == 'expirado') table-danger
-                                @elseif($dados->alerta == 'critico') table-warning
-                                @elseif($dados->alerta == 'atencao') table-info
-                                @endif
-                            ">
-                            <td>{{ $dados->produto->nome." / ".$dados->produto->descricao." / ".$dados->produto->categoria }}</td>
-                            <td>
-                                <span class="badge 
-                                    {{ $dados->status_validade == 'expirado' ? 'bg-danger' : '' }}
-                                    {{ $dados->status_validade == 'critico' ? 'bg-warning' : '' }}
-                                    {{ $dados->status_validade == 'atencao' ? 'bg-info' : '' }}
-                                ">
-                                    {{ strtoupper($dados->status_validade) }}
-                                </span>
-                            </td>
-                            <td>{{ $dados->preco." KZ" }}</td>
-                            <td>{{ $dados->qtd_stock }}</td>
-                            <td>{{ $dados->data_entrada }}</td>
-                            <td>{{ $dados->codigo_barra }}</td>
+                        <tr class="
+                            {{ $dados->alerta == 'expirado' ? 'table-danger' : '' }}
+                            {{ $dados->alerta == 'critico' ? 'table-warning' : '' }}
+                        ">
+
+                            <td>{{ $dados->produto->nome }}</td>
+                            <td>{{ $dados->preco_compra }} KZ</td>
+                            <td>{{ $dados->preco_venda }} KZ</td>
+                            <td><strong>{{ $dados->qtd_stock }}</strong></td>
                             <td>{{ $dados->fornecedor }}</td>
                             <td>{{ $dados->caducidade }}</td>
-                            <td>{{ $dados->funcionario->nome }}</td>
+
                             <td>
-                                <a href="#AumentarStock" data-toggle="modal" class="text-success" onclick="abrirModalAumentar({{ $dados->id }}, '{{ $dados->produto->nome }}')">
-                                    <i class="fa fa-plus-circle"></i>
-                                </a>
-                                <a href="#Cadastrar" data-toggle="modal" class="text-primary" onclick='editar(@json($dados))'><i class="fa fa-edit"></i></a>
-                                <a href="{{ route('stock.destroy', $dados->id) }}" class="text-danger"><i class="fa fa-trash"></i></a>
+                                @if($dados->alerta_completa == 'critico_total')
+                                    <span class="badge bg-danger">⚠ CRÍTICO TOTAL</span>
+
+                                @elseif($dados->alerta_completa == 'expirado')
+                                    <span class="badge bg-dark">⛔ EXPIRADO</span>
+
+                                @elseif($dados->alerta_completa == 'baixo_stock')
+                                    <span class="badge bg-warning">📦 STOCK BAIXO</span>
+
+                                @elseif($dados->alerta_completa == 'critico_validade')
+                                    <span class="badge bg-danger">⏰ VALIDADE CRÍTICA</span>
+
+                                @elseif($dados->alerta_completa == 'atencao_validade')
+                                    <span class="badge bg-info">⚠ ATENÇÃO VALIDADE</span>
+
+                                @else
+                                    <span class="badge bg-success">NORMAL</span>
+                                @endif
                             </td>
+
+                            <td>
+
+                                <button class="btn btn-sm btn-success"
+                                    data-toggle="modal"
+                                    data-target="#AumentarStock"
+                                    onclick="abrirModalAumentar({{ $dados->id }}, '{{ $dados->produto->nome }}')">
+                                    + Stock
+                                </button>
+                               
+                                <button class="btn btn-sm btn-info"
+                                    data-toggle="modal"
+                                    data-target="#Cadastrar"
+                                    onclick='editar(@json($dados))'>
+                                    Editar
+                                </button>
+
+                                <a href="{{ route('stock.destroy',$dados->id) }}"
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Eliminar este stock?')">
+                                    Apagar
+                                </a>
+
+                            </td>
+
                         </tr>
                     @endforeach
-                    </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        </div>
-    </div>
-    
-</div>
-<!-- Modal -->
-<div class="modal fade" id="Cadastrar" tabindex="-1" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-                <div class="modal-header">
-                        <h5 class="modal-title">DAR ENTRADA NO STOCK</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                    </div>
-            <div class="modal-body">
-                <div class="container-fluid">
-                   <form action="{{route('stock.store')}}" method="post" enctype="multipart/form-data">
-                    @csrf
-                         <input type="hidden" name="id_funcionario" value="{{Auth::guard('funcionario')->user()->id}}">
-                         <input type="hidden" name="id_produto" id="id_produto" value="{{ $valor->id ?? '' }}">
-                         <input type="hidden" name="id" id="id">
+                </tbody>
 
-                       @if($valor)
-                            <p><strong>Nome do Produto : </strong>{{ $valor->nome }}</p>
-                        @else
-                        <p><strong>Produto Selecionado: </strong><span id="nomeProdutoSelecionado">Selecione um produto</span></p>
-                        @endif
-                        <div class="row">
-                            <x-input-normal id="preco" name="preco" type="number" titulo="Preço" alert="" />
-                            <x-input-normal id="qtd_stock" name="qtd_stock" type="number" titulo="Quantidade" alert="" />
-                            <x-input-normal id="fornecedor" name="fornecedor" type="text" titulo="Fornecedor" alert="" />
-                            <x-input-normal id="codigo_barra" name="codigo_barra" type="text" titulo="Codigo de Barra" alert="" />
-                            <x-input-normal id="caducidade" name="caducidade" type="date" titulo="Caducidade" alert="" />
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <x-botao-form />
-            </form>
-            </div>
+            </table>
+
         </div>
     </div>
 </div>
- <!-- Modal para Aumentar Quantidade -->
-<div class="modal fade" id="AumentarStock" tabindex="-1" role="dialog" aria-labelledby="modalAumentarTitle" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+
+{{-- ========================= --}}
+{{-- MODAL CADASTRAR / EDITAR --}}
+{{-- ========================= --}}
+<div class="modal fade" id="Cadastrar">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Entrada de Stock</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
             <form action="{{ route('stock.store') }}" method="POST">
-                <input type="hidden" name="tipo" value="aumentar">
                 @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Aumentar Quantidade no Stock</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
+
+                <input type="hidden" name="id" id="id">
+                <input type="hidden" name="id_funcionario" value="{{ Auth::guard('funcionario')->user()->id }}">
+                <input type="hidden" name="id_produto" id="id_produto">
+
                 <div class="modal-body">
-                    <p><strong>Produto:</strong> <span id="nomeProdutoModal"></span></p>
-                    <input type="hidden" name="id" id="stock_id_aumentar">
-                    <div class="form-group">
-                        <label for="qtd_stock_nova">Quantidade a Adicionar</label>
-                        <input type="number" name="qtd_stock" id="qtd_stock_nova" class="form-control" required min="1">
+
+                    <p><strong>Produto:</strong>
+                        <span id="nomeProdutoSelecionado">Selecione um produto</span>
+                    </p>
+
+                    <div class="row">
+
+                        <x-input-normal id="preco_compra" name="preco_compra" type="number" titulo="Preço Compra" />
+                        <x-input-normal id="preco_venda" name="preco_venda" type="number" titulo="Preço Venda" />
+                        <x-input-normal id="qtd_stock" name="qtd_stock" type="number" titulo="Quantidade" />
+                        <x-input-normal id="fornecedor" name="fornecedor" type="text" titulo="Fornecedor" />
+                        <x-input-normal id="codigo_barra" name="codigo_barra" type="text" titulo="Código de Barra" />
+                        <x-input-normal id="caducidade" name="caducidade" type="date" titulo="Validade" />
+
                     </div>
+
                 </div>
+
                 <div class="modal-footer">
                     <x-botao-form />
                 </div>
+
             </form>
+
         </div>
     </div>
 </div>
+
+{{-- ========================= --}}
+{{-- MODAL AUMENTAR STOCK --}}
+{{-- ========================= --}}
+<div class="modal fade" id="AumentarStock" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <form action="{{ route('stock.store') }}" method="POST">
+                @csrf
+
+                <input type="hidden" name="id" id="stock_id_aumentar">
+                <input type="hidden" name="tipo" value="aumentar">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Aumentar Stock</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <div class="modal-body">
+
+                    <p><strong>Produto:</strong>
+                        <span id="nomeProdutoModal"></span>
+                    </p>
+
+                    <div class="form-group">
+                        <label>Quantidade a Adicionar</label>
+                        <input type="number" name="qtd_stock" class="form-control" required min="1">
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-success">Aumentar</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{{-- ========================= --}}
+{{-- JAVASCRIPT ERP --}}
+{{-- ========================= --}}
 <script>
-    function editar(valor) {
-        document.getElementById('id').value = valor.id;
-        document.getElementById('preco').value = valor.preco;
-        document.getElementById('preco').value = valor.preco;
-        document.getElementById('fornecedor').value = valor.fornecedor;
-        document.getElementById('codigo_barra').value = valor.codigo_barra;
-        document.getElementById('qtd_stock').value = valor.qtd_stock;
-        document.getElementById('caducidade').value = valor.caducidade;
-        document.getElementById('id_produto').value = valor.id_produto;
 
+function editar(dados) {
+    $('#id').val(dados.id);
+    $('#preco_compra').val(dados.preco_compra);
+    $('#preco_venda').val(dados.preco_venda);
+    $('#fornecedor').val(dados.fornecedor);
+    $('#codigo_barra').val(dados.codigo_barra);
+    $('#qtd_stock').val(dados.qtd_stock);
+    $('#caducidade').val(dados.caducidade);
+    $('#id_produto').val(dados.id_produto);
 
-        if (valor.produto) {
-            document.getElementById('nomeProdutoSelecionado').textContent = valor.produto.nome + " / " + valor.produto.descricao + " / " + valor.produto.categoria;
-            document.getElementById('id_produto').value = valor.produto.id;
-        }
+    if (dados.produto) {
+        $('#nomeProdutoSelecionado').text(
+            dados.produto.nome + " / " + dados.produto.descricao
+        );
     }
-    function limpar() {
-        document.getElementById('id').value = "";
-        document.getElementById('qtd_stock').value = "";
-        document.getElementById('caducidade').value = "";
-        document.getElementById('fornecedor').value = "";
-        document.getElementById('codigo_barra').value = "";
-        document.getElementById('preco').value = "";
-        document.getElementById('id_produto').value = "";
-    }
-     function abrirModalAumentar(stockId, nomeProduto) {
-        document.getElementById('stock_id_aumentar').value = stockId;
-        document.getElementById('nomeProdutoModal').textContent = nomeProduto;
-        document.getElementById('qtd_stock_nova').value = '';
-    }
+}
+
+function limpar() {
+    $('#id').val('');
+    $('#qtd_stock').val('');
+    $('#fornecedor').val('');
+    $('#codigo_barra').val('');
+    $('#preco_compra').val('');
+    $('#preco_venda').val('');
+    $('#caducidade').val('');
+    $('#id_produto').val('');
+    $('#nomeProdutoSelecionado').text('Selecione um produto');
+}
+
+function abrirModalAumentar(id, nome) {
+    $('#stock_id_aumentar').val(id);
+    $('#nomeProdutoModal').text(nome);
+}
+
 </script>
+
 @endsection

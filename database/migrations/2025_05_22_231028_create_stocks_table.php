@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('stocks', function (Blueprint $table) {
             $table->id();
-            $table->decimal('preco_unitario', 10, 2);
+            $table->decimal('preco_compra', 10, 2);
             $table->decimal('preco_venda', 10, 2);
             $table->integer('qtd_stock');
             $table->string('codigo_barra');

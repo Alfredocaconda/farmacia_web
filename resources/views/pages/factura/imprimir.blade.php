@@ -36,10 +36,12 @@
 <body >
 
     <div class="center">
-        <h2>SMILE FARMA & ODONTO-COMERÇIO E SERVIÇOS, LDA</h2>
-        <p>NIF: 5001204530</p>
-        <p>Rua José Anchieta e Frederico Welwitsch,Nº 83/85</p>
-        <p>Telefone: 999-999-999</p>
+        <h2>FARMÁCIA 4 DE SETEMBRO</h2>
+         <p>BENGUELA-ANGOLA</p>
+        <p>BAIRRO 4 DE ABRIL</p>
+        <p>Telefone: 940724510/998724510</p>
+        <p>Email: farmacia5desetembro@gmail.com</p>
+        <p>NIF: 003297956BA039</p>
     </div>
 
     <div class="border-top border-bottom">

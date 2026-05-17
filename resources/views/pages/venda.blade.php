@@ -1,212 +1,305 @@
 @extends('layouts.base')
 @section('title', 'VENDAS')
+
 @section('content')
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="d-flex align-items-center">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo da Farmácia" style="height: 50px; margin-right: 10px;">
-            <h3 class="mb-0">SMILE FARMA & ODONTO-COMERÇIO E SERVIÇOS, LDA</h3>
-        </div>
-        <div class="text-end">
-            <div><strong>Funcionário:</strong> {{ Auth::guard('funcionario')->user()->nome ?? 'Desconhecido' }}</div>
-            <div><strong>Função:</strong> {{ Auth::guard('funcionario')->user()->funcao ?? '---' }}</div>
-            @php $funcao = Auth::guard('funcionario')->user()->funcao ?? null; @endphp
-            @if ($funcao === 'Gerente')
-                <a href="{{ route('dashboard') }}" class="btn btn-sm btn-danger">SAIR</a>
-            @else
-                <form action="{{ route('logout') }}" method="POST" class="d-inline">
+
+<div class="container-fluid py-3">
+
+    {{-- ================= HEADER ================= --}}
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body d-flex justify-content-between align-items-center">
+
+            <div class="d-flex align-items-center">
+                <img src="{{ asset('images/logo.png') }}" style="height:45px; margin-right:10px;">
+                <div>
+                    <h5 class="mb-0">Farmácia 4 de Setembro</h5>
+                    <small class="text-muted">Sistema de Vendas</small>
+                </div>
+            </div>
+
+           <div class="text-end">
+
+                <strong>{{ Auth::guard('funcionario')->user()->nome }}</strong><br>
+
+                <span class="badge bg-info">
+                    {{ Auth::guard('funcionario')->user()->funcao }}
+                </span><br>
+
+                <small>{{ now()->format('d/m/Y H:i') }}</small><br>
+
+                {{-- BOTÃO SAIR --}}
+                @php
+                    $user = Auth::guard('funcionario')->user();
+                @endphp
+
+                <form method="POST" action="{{ route('logout') }}" class="d-inline">
                     @csrf
-                    <button type="submit" class="btn btn-sm btn-danger"> <i class="fa fa-sign-out-alt"></i> SAIR</button>
+
+                    <button type="submit"
+                            class="btn btn-sm btn-danger mt-1">
+
+                        Sair
+                    </button>
                 </form>
-            @endif
+
+            </div>
+
         </div>
     </div>
 
-    @if (session('SUCESSO'))
-        <div class="alert alert-green">{{ session('SUCESSO') }}</div>
-    @endif
-    @if (session('ERRO'))
-        <div class="alert alert-danger">{{ session('ERRO') }}</div>
-    @endif
-           <div class="row">
-        <div class="col-md-8">
-            <div class="row justify-content-center mb-3">
-                <div class="col-md-6">
-                    <form method="GET" action="{{ route('vendas.index') }}">
-                        <div class="input-group">
-                            <input type="text" name="search" class="form-control" placeholder="Pesquisar produto..." value="{{ request('search') }}">
-                            <button type="submit" class="btn btn-primary">Pesquisar</button>
+    <div class="row">
+
+        {{-- ================= PRODUTOS ================= --}}
+        <div class="col-md-7">
+
+            {{-- PESQUISA COMPACTA --}}
+            <div class="card mb-2">
+                <div class="card-body p-2">
+                    <form method="GET">
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="search"
+                                class="form-control"
+                                placeholder="Pesquisar produto..."
+                                value="{{ request('search') }}">
+                            <button class="btn btn-primary">🔍</button>
                         </div>
                     </form>
                 </div>
             </div>
-            <div class="tabela-rolavel">
-                <table class="table table-bordered table-striped">
-                    <thead class="table-light">
-                        <tr><th>Produto</th><th>Preço</th><th>Qtd em Stock</th><th>Ação</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach($stocks as $stock)
-                        @php
-                            $caducado = \Carbon\Carbon::parse($stock->caducidade)->isPast();
-                            if ($caducado) continue;
-                            $baixo_stock = $stock->qtd_stock < 10;
-                        @endphp
-                        <tr class="{{ ($baixo_stock ? 'linha-baixa-verde' : '') }}">
-                            <td>{{ $stock->produto->nome }}</td>
-                            <td>{{ number_format($stock->preco, 2) }} Kz</td>
-                            <td>{{ $stock->qtd_stock }}</td>
-                            <td>
-                                <button class="btn btn-sm btn-primary btn-selecionar" data-stock-id="{{ $stock->id }}" data-produto-nome="{{ $stock->produto->nome }}" data-max-qtd="{{ $stock->qtd_stock }}">Selecionar</button>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+
+            {{-- TABELA COMPACTA --}}
+            <div class="card">
+                <div class="table-responsive" style="max-height:400px; overflow-y:auto;">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Produto</th>
+                                <th>Preço</th>
+                                <th>Quantidade</th>
+                                <th>Opções</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach($stocks as $stock)
+
+                            @php
+                                $expirado = \Carbon\Carbon::parse($stock->caducidade)->isPast();
+                                if($expirado) continue;
+                            @endphp
+
+                            <tr>
+                                <td>{{ $stock->produto->nome }}</td>
+                                <td>{{ number_format($stock->preco_venda,2) }} Kz</td>
+                                <td>
+                                    <span class="badge {{ $stock->qtd_stock < 10 ? 'bg-warning':'bg-success' }}">
+                                        {{ $stock->qtd_stock }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary"
+                                        onclick="abrirModal({{ $stock->id }}, '{{ $stock->produto->nome }}', {{ $stock->qtd_stock }})">
+                                        +
+                                    </button>
+                                </td>
+                            </tr>
+
+                            @endforeach
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        {{-- ================= CARRINHO ================= --}}
+            {{-- ================= CARRINHO ERP ================= --}}
+        <div class="col-md-5">
+
+            <div class="card shadow-sm">
+
+                {{-- HEADER --}}
+                <div class="card-header d-flex justify-content-between align-items-center bg-dark text-white">
+                    <span>🛒 Carrinho</span>
+                    <a href="{{ route('vendas.clear') }}" class="btn btn-sm btn-light">Limpar</a>
+                </div>
+
+                <div class="card-body p-2">
+
+                    @php $total = 0; @endphp
+
+                    @if(empty($cart))
+                        <div class="text-center text-muted py-3">
+                            <small>Sem produtos</small>
+                        </div>
+                    @else
+
+                        {{-- LISTA COMPACTA --}}
+                        <div style="max-height:250px; overflow-y:auto;">
+
+                            @foreach($cart as $item)
+
+                            @php
+                                $subtotal = $item['preco_venda'] * $item['quantidade'];
+                                $total += $subtotal;
+                            @endphp
+
+                            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+
+                                {{-- PRODUTO --}}
+                                <div style="width:45%">
+                                    <small class="fw-bold">{{ $item['nome'] }}</small>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ number_format($item['preco_venda'],2) }} Kz
+                                    </small>
+                                </div>
+
+                                {{-- CONTROLO QTD --}}
+                                <div class="d-flex align-items-center">
+
+                                    <a href="{{ route('vendas.diminuir',$item['id']) }}"
+                                    class="btn btn-sm btn-outline-secondary px-2">−</a>
+
+                                    <span class="mx-2">{{ $item['quantidade'] }}</span>
+
+                                    <a href="{{ route('vendas.aumentar',$item['id']) }}"
+                                    class="btn btn-sm btn-outline-secondary px-2">+</a>
+                                </div>
+
+                                {{-- SUBTOTAL --}}
+                                <div style="width:25%" class="text-end">
+                                    <small class="fw-bold">
+                                        {{ number_format($subtotal,2) }} Kz
+                                    </small>
+                                </div>
+
+                                {{-- REMOVER --}}
+                                <a href="{{ route('vendas.remove',$item['id']) }}"
+                                class="btn btn-sm btn-danger ms-2">x</a>
+
+                            </div>
+
+                            @endforeach
+
+                        </div>
+
+                        {{-- TOTAL FIXO --}}
+                        <div class="mt-3 p-2 bg-light rounded text-center">
+                            <h5 class="mb-0">
+                                Total: <strong>{{ number_format($total,2) }} Kz</strong>
+                            </h5>
+                        </div>
+
+                        {{-- PAGAMENTO SIMPLES ERP --}}
+                        <form action="{{ route('vendas.store') }}" method="POST" class="mt-2">
+                            @csrf
+
+                            <input type="hidden" name="id_funcionario"
+                                value="{{ Auth::guard('funcionario')->user()->id }}">
+
+                            <div class="row g-2">
+
+                                <div class="col-6">
+                                    <select name="forma_pagamento" class="form-control form-control-sm" required>
+                                        <option value="dinheiro">Dinheiro</option>
+                                        <option value="multicaixa">Multicaixa</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-6">
+                                        <input type="number"
+                                            name="valor_entregue"
+                                            id="valor_entregue"
+                                            class="form-control form-control-sm"
+                                            placeholder="Valor"
+                                            min="{{ $total }}"
+                                            required>
+                                </div>
+
+                            </div>
+
+                            <input type="text"
+                                id="troco"
+                                class="form-control form-control-sm mt-2 bg-light text-center"
+                                placeholder="Troco"
+                                readonly>
+
+                            <button class="btn btn-success btn-sm w-100 mt-2">
+                                Finalizar Venda
+                            </button>
+
+                        </form>
+
+                    @endif
+
+                </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <h4>Carrinho</h4>
-            @php $total = 0; @endphp
-            @if(empty($cart))
-                <p class="text-muted">Sem produtos no carrinho.</p>
-            @else
-                @php foreach($cart as $item) { $subtotal = $item['preco'] * $item['quantidade']; $total += $subtotal; } @endphp
-                <table class="table table-sm table-bordered">
-                    <thead class="table-light">
-                        <tr><th>Produto</th><th>Qtd</th><th>Total</th><th></th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach($cart as $item)
-                        @php $subtotal = $item['preco'] * $item['quantidade']; @endphp
-                        <tr>
-                            <td>{{ $item['nome'] }}</td>
-                            <td>{{ $item['quantidade'] }}</td>
-                            <td>{{ number_format($subtotal, 2) }} Kz</td>
-                            <td><a href="{{ route('vendas.remove', $item['id']) }}" class="btn btn-sm btn-danger">X</a></td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-                <p><strong>Total Geral:</strong> {{ number_format($total, 2) }} Kz</p>
-                <form id="formFinalizarVenda" action="{{ route('vendas.store') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="id_funcionario" value="{{ Auth::guard('funcionario')->user()->id }}">
-                    <input type="hidden" id="campoImprimir" name="imprimir" value="nao">
-                    <x-input-normal id="cliente" name="cliente" type="text" titulo="Nome do Cliente" alert="" />
-                    <div class="mb-2">
-                        <label for="forma_pagamento" class="form-label">Forma de pagamento</label>
-                        <select name="forma_pagamento" id="forma_pagamento" class="form-select" required>
-                            <option value="">Selecione</option>
-                            <option value="dinheiro">Dinheiro</option>
-                            <option value="cartao_credito">Cartão de Crédito</option>
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label for="valor_entregue" class="form-label">Valor entregue pelo cliente</label>
-                        <input type="number" name="valor_entregue" id="valor_entregue" class="form-control" step="0.01" min="{{ $total }}" required>
-                    </div>
-                    <div class="mb-2">
-                        <label for="troco" class="form-label">Troco</label>
-                        <input type="text" id="troco" class="form-control bg-light" readonly>
-                    </div>
-                    <button type="button" class="btn btn-success w-100 mb-2" id="btnConfirmarVenda">Finalizar Venda</button>
-                </form>
-                <a href="{{ route('vendas.clear') }}" class="btn btn-secondary w-100">Limpar Carrinho</a>
+    </div>
 
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        const valorEntregueInput = document.getElementById('valor_entregue');
-                        const trocoInput = document.getElementById('troco');
-                        const total = {{ json_encode($total) }};
+    {{-- ================= RODAPÉ ================= --}}
+    <div class="text-center mt-4 text-muted">
+        <small>FARMÁCIA 4 DE SETEMBRO © {{ date('Y') }} | Sistema Profissional</small>
+    </div>
 
-                        if (valorEntregueInput) {
-                            valorEntregueInput.addEventListener('input', function () {
-                                const valor = parseFloat(this.value);
-                                if (!isNaN(valor)) {
-                                    const troco = valor - total;
-                                    trocoInput.value = troco >= 0 ? troco.toFixed(2) + ' Kz' : 'Valor insuficiente';
-                                } else {
-                                    trocoInput.value = '';
-                                }
-                            });
-                        }
-                    });
-                </script>
-            @endif
-        </div>
+</div>
+
+{{-- ================= MODAL ================= --}}
+<div id="modalVenda" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:20px; border-radius:10px; width:300px;">
+
+        <h5 id="produtoNome"></h5>
+
+        <form method="POST" action="{{ route('vendas.add') }}">
+            @csrf
+
+            <input type="hidden" name="stock_id" id="stock_id">
+
+            <input type="number" name="quantidade"
+                id="quantidade"
+                class="form-control mb-2"
+                placeholder="Quantidade">
+
+            <button class="btn btn-success w-100">Adicionar</button>
+        </form>
+
+        <button class="btn btn-secondary w-100 mt-2"
+            onclick="fecharModal()">Cancelar</button>
+
     </div>
 </div>
 
+{{-- ================= JS ================= --}}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const modal = document.createElement('div');
-        modal.id = 'customModal';
-        modal.style = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center;';
-        modal.innerHTML = `
-            <div style="background: white; padding: 20px; border-radius: 10px; width: 300px; max-width: 90%;">
-                <h5 id="productName"></h5>
-                <form id="modalForm" method="POST" action="{{ route('vendas.add') }}">
-                    @csrf
-                    <input type="hidden" name="stock_id" id="modalStockId">
-                    <div class="mb-3">
-                        <label for="modalQuantidade" class="form-label">Quantidade</label>
-                        <input type="number" name="quantidade" id="modalQuantidade" class="form-control" required>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <button type="submit" class="btn btn-success">Adicionar</button>
-                        <button type="button" class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
-                    </div>
-                </form>
-            </div>
-        `;
-        document.body.appendChild(modal);
 
-        document.querySelectorAll('.btn-selecionar').forEach(button => {
-            button.addEventListener('click', function () {
-                const stockId = this.dataset.stockId;
-                const nomeProduto = this.dataset.produtoNome;
-                const maxQtd = this.dataset.maxQtd;
+function abrirModal(id,nome,max){
+    document.getElementById('modalVenda').style.display='flex';
+    document.getElementById('stock_id').value=id;
+    document.getElementById('produtoNome').innerText=nome;
+    document.getElementById('quantidade').max=max;
+}
 
-                document.getElementById('modalStockId').value = stockId;
-                document.getElementById('productName').textContent = "Adicionar: " + nomeProduto;
-                document.getElementById('modalQuantidade').max = maxQtd;
-                document.getElementById('modalQuantidade').value = "";
-                modal.style.display = 'flex';
-            });
-        });
-    });
-    function fecharModal() {
-        document.getElementById('customModal').style.display = 'none';
+function fecharModal(){
+    document.getElementById('modalVenda').style.display='none';
+}
+
+// TROCO
+document.getElementById('valor_entregue')?.addEventListener('input',function(){
+
+    let total = {{ $total ?? 0 }};
+    let valor = parseFloat(this.value);
+
+    if(!isNaN(valor)){
+        let troco = valor - total;
+
+        document.getElementById('troco').value =
+            troco >= 0 ? troco.toFixed(2)+' Kz' : 'Insuficiente';
     }
+});
+
 </script>
 
-<div class="modal" tabindex="-1" id="confirmarImpressaoModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
-    <div style="background: #fff; padding: 20px; border-radius: 10px; width: 400px;">
-        <h5>Deseja imprimir o comprovativo?</h5>
-        <div class="mt-3 d-flex justify-content-end">
-            <button class="btn btn-secondary me-2" onclick="confirmarImpressao(false)">Não</button>
-            <button class="btn btn-primary" onclick="confirmarImpressao(true)">Sim</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.getElementById('btnConfirmarVenda').addEventListener('click', function () {
-        document.getElementById('confirmarImpressaoModal').style.display = 'flex';
-    });
-
-    function confirmarImpressao(deveImprimir) {
-        document.getElementById('campoImprimir').value = deveImprimir ? 'sim' : 'nao';
-        document.getElementById('confirmarImpressaoModal').style.display = 'none';
-        document.getElementById('formFinalizarVenda').submit();
-    }
-</script>
-
-@if(session('codigo_fatura') && session('imprimir') === 'sim')
-<script>
-    window.open("{{ route('vendas.imprimir', ['codigo_fatura' => session('codigo_fatura')]) }}", '_blank');
-</script>
-@endif
 @endsection

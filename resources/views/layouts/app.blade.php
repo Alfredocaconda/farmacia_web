@@ -92,10 +92,10 @@
                     
                       <!-- INFORMACAO DA SECRETARIA QUE TERAO ACESSO-->
                       <li class=" ">
-                        <a href="{{route('devolucoes.devolucao')}}" class="svg-icon">
+                        <a href="{{ route('devolucoes.index') }}" class="svg-icon">
                             <i class="fa fa-users"></i>
-                              <span class="ml-4">DEVOLUÇÃO</span>
-                          </a>
+                            <span class="ml-4">DEVOLUÇÃO</span>
+                        </a>
                       </li>
                     <li class=" ">
                         <a href="{{route('vendas.index')}}" class="svg-icon">

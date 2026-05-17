@@ -13,7 +13,7 @@ use App\Http\Controllers\{
 
 // ===============================
 // ROTAS PÚBLICAS
-// ===============================
+// ===============================yy
 Route::get('/', [FuncionarioAuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [FuncionarioAuthController::class, 'login'])->name('funcionario.login');
 Route::post('/logout', [FuncionarioAuthController::class, 'logout'])->name('logout');
@@ -47,20 +47,44 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/stock/store', [StockController::class, 'store'])->name('stock.store');
     Route::get('/stock/destroy/{id}', [StockController::class, 'destroy'])->name('stock.destroy');
     Route::get('/stocks/{id?}', [StockController::class, 'index'])->name('stock.index');
+    Route::get('/stock/check/{id}', [StockController::class, 'check']);
 
     // ================= VENDAS =================
-    Route::get('/vendas', [VendaController::class, 'index'])->name('vendas.index');
-    Route::post('/vendas/adicionar', [VendaController::class, 'adicionar_carrinho'])->name('vendas.add');
-    Route::get('/vendas/remover/{id}', [VendaController::class, 'removeFromCart'])->name('vendas.remove');
-    Route::get('/vendas/limpar', [VendaController::class, 'apagar_carrinho'])->name('vendas.clear');
-    Route::post('/vendas/finalizar', [VendaController::class, 'store'])->name('vendas.store');
+    Route::prefix('vendas')->group(function () {
 
-    Route::get('/vendas/relatorio', [VendaController::class, 'relatorio'])->name('vendas.relatorio');
-    Route::get('/vendas/imprimir/{codigo_fatura}', [VendaController::class, 'imprimir'])->name('vendas.imprimir');
-    Route::get('/vendas/relatorio/pdf', [VendaController::class, 'exportarPDF'])->name('vendas.relatorio.pdf');
+    Route::get('/', [VendaController::class, 'index'])
+            ->name('vendas.index');
 
-    // ================= DEVOLUÇÕES =================
-    Route::get('/devolucoes', [VendaController::class, 'devolucao'])->name('devolucoes.devolucao');
-    Route::delete('/devolucoes/{id}', [VendaController::class, 'eliminarVenda'])->name('devolucoes.eliminar');
+        Route::post('/adicionar', [VendaController::class, 'add'])
+            ->name('vendas.add');
 
+        Route::get('/remover/{id}', [VendaController::class, 'remove'])
+            ->name('vendas.remove');
+
+        Route::get('/limpar', [VendaController::class, 'clear'])
+            ->name('vendas.clear');
+
+        Route::post('/finalizar', [VendaController::class, 'store'])
+            ->name('vendas.store');
+
+        Route::get('/aumentar/{id}', [VendaController::class, 'aumentar'])
+            ->name('vendas.aumentar');
+
+        Route::get('/diminuir/{id}', [VendaController::class, 'diminuir'])
+            ->name('vendas.diminuir');
+
+        Route::get('/imprimir/{codigo_fatura}', [VendaController::class, 'imprimir'])
+            ->name('vendas.imprimir');
+    });
+    Route::get('/vendas/relatorio', [VendaController::class, 'relatorio'])
+    ->name('vendas.relatorio');
+    /*
+    |--------------------------------------------------------------------------
+    | DEVOLUÇÕES
+    |--------------------------------------------------------------------------
+    */
+   Route::prefix('devolucoes')->group(function () {
+    Route::get('/', [VendaController::class, 'devolucao'])->name('devolucoes.index');
+    Route::delete('/{id}', [VendaController::class, 'eliminarVenda'])->name('devolucoes.destroy');
+});
 });
