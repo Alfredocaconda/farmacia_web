@@ -3,6 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Recibo - {{ $vendas[0]->codigo_fatura }}</title>
+    @php
+        $empresa = null;
+        $path = storage_path('app/empresa.txt');
+
+        if (file_exists($path)) {
+            $empresa = json_decode(file_get_contents($path));
+        }
+    @endphp
+
+    <img src="{{ asset($empresa->logo ?? 'images/logo.png') }}"
+        class="img-fluid rounded-normal light-logo">
     <style>
         @media print {
             body {
@@ -31,17 +42,30 @@
         th, td { border-bottom: 1px solid #ccc; padding: 8px; text-align: left; }
         .totais td { font-weight: bold; }
         .right { text-align: right; }
+        
     </style>
 </head>
+@php
+    $empresa = null;
+    $path = storage_path('app/empresa.txt');
+
+    if (file_exists($path)) {
+        $empresa = json_decode(file_get_contents($path));
+    }
+@endphp
 <body >
 
     <div class="center">
-        <h2>FARMÁCIA 4 DE SETEMBRO</h2>
-         <p>BENGUELA-ANGOLA</p>
-        <p>BAIRRO 4 DE ABRIL</p>
-        <p>Telefone: 940724510/998724510</p>
-        <p>Email: farmacia5desetembro@gmail.com</p>
-        <p>NIF: 003297956BA039</p>
+        @if($empresa && $empresa->logo)
+            <img src="{{ asset($empresa->logo) }}" width="100">
+        @endif
+
+        <h2>{{ $empresa->nome ?? 'Empresa' }}</h2>
+        <p>{{ $empresa->endereco ?? '' }}</p>
+        <p>{{ $empresa->bairro ?? '' }}</p>
+        <p>Telefone: {{ $empresa->telefone ?? '' }}</p>
+        <p>Email: {{ $empresa->email ?? '' }}</p>
+        <p>NIF: {{ $empresa->nif ?? '' }}</p>
     </div>
 
     <div class="border-top border-bottom">

@@ -65,6 +65,12 @@
                           </a>
                       </li>
                       <li class=" ">
+                        <a href="{{route('empresa.index')}}" class="svg-icon">
+                            <i class="fa fa-users"></i>
+                              <span class="ml-4">Empresa</span>
+                          </a>
+                      </li>
+                      <li class=" ">
                         <a href="{{route('categoria.index')}}" class="svg-icon">
                             <i class="fa fa-users"></i>
                               <span class="ml-4">CATEGORIA</span>

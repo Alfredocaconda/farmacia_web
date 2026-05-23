@@ -8,7 +8,8 @@ use App\Http\Controllers\{
     VendaController,
     FuncionarioAuthController,
     DashboardController,
-    CategoriaController
+    CategoriaController,
+    EmpresaController
 };
 
 // ===============================
@@ -87,4 +88,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', [VendaController::class, 'devolucao'])->name('devolucoes.index');
     Route::delete('/{id}', [VendaController::class, 'eliminarVenda'])->name('devolucoes.destroy');
 });
+Route::get('/empresa', [EmpresaController::class, 'index'])->name('empresa.index');
+Route::post('/empresa', [EmpresaController::class, 'salvar'])->name('empresa.salvar');
+Route::delete('/empresa', [EmpresaController::class, 'deletar'])->name('empresa.deletar');
 });
